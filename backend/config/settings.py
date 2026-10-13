@@ -56,11 +56,32 @@ TEMPLATES = [
     }
 ]
 
+def _can_write(directory: Path) -> bool:
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        probe = directory / ".write_probe"
+        probe.write_text("")
+        probe.unlink()
+        return True
+    except OSError:
+        return False
+
+
 # SQLite keeps planned trips. Weather responses still use the in-memory cache.
+# Deplexo (and similar hosts) mount the image read-only and expose one writable
+# volume at /data, so the database has to live there or migrate cannot start.
+_sqlite = os.environ.get("SQLITE_PATH", "").strip()
+if _sqlite:
+    _db_path = Path(_sqlite)
+elif _can_write(Path("/data")):
+    _db_path = Path("/data") / "db.sqlite3"
+else:
+    _db_path = BASE_DIR / "db.sqlite3"
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": _db_path,
         "OPTIONS": {"timeout": 20},
     }
 }
@@ -75,7 +96,12 @@ CACHES = {
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATIC_ROOT.mkdir(exist_ok=True)  # avoids a WhiteNoise warning; the app has no Django static files
+try:
+    # The app has no Django static files. The directory only exists so WhiteNoise
+    # does not warn. Skip the create when the image is mounted read-only.
+    STATIC_ROOT.mkdir(exist_ok=True)
+except OSError:
+    pass
 # WhiteNoise serves the built SPA (index.html, /assets/*) from the dist folder.
 WHITENOISE_ROOT = FRONTEND_DIST if FRONTEND_DIST.exists() else None
 WHITENOISE_MAX_AGE = 3600
