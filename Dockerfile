@@ -8,13 +8,10 @@ RUN npm run build
 
 # ---- 2. Django API + built SPA in one image ----------------------------------
 FROM python:3.12-slim
-COPY --from=ghcr.io/astral-sh/uv:0.9.7 /uv /uvx /bin/
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 DJANGO_DEBUG=0 PORT=8000 \
-    UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy \
-    PATH="/app/backend/.venv/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 DJANGO_DEBUG=0 PORT=8000
 WORKDIR /app/backend
-COPY backend/pyproject.toml backend/uv.lock ./
-RUN uv sync --frozen --no-dev
+COPY backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./
 # Present in the image so a read-only runtime does not try to create it.
 RUN mkdir -p /app/backend/staticfiles
