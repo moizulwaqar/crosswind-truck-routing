@@ -95,7 +95,12 @@ def _grid_props(lat: float, lon: float) -> dict | None:
         props = _get(f"https://api.weather.gov/gridpoints/{office}/{x},{y}")
         if not props:
             return None
-        props = props.get("properties") or {}
+        raw = props.get("properties") or {}
+        # The full grid document is several MB. Only the series the risk rules read are kept.
+        props = {
+            key: raw.get(key)
+            for key in ("windSpeed", "windGust", "quantitativePrecipitation", "snowfallAmount")
+        }
         cache.set(series_key, props, CACHE_SECONDS)
     return props
 

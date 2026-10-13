@@ -83,7 +83,7 @@ def test_heavier_load_never_lowers_risk(client):
 def test_heatmap_frames(client):
     plan = client.post("/api/plan", plan_payload(), format="json").json()
     cells = plan["corridor"]["cells"]
-    assert 0 < len(cells) <= 450
+    assert 0 < len(cells) <= 120
     res = client.post(
         "/api/heatmap",
         {"start": plan["departure"], "load_lb": 42_000, "cells": cells},

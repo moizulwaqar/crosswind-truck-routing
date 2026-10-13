@@ -195,6 +195,7 @@ export default function App() {
         />
         {plan && (
           <TimeBar
+            start={plan.departure}
             heat={heat}
             loading={heatLoading}
             error={heatError}

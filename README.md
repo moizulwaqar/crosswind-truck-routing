@@ -57,7 +57,7 @@ Values are rounded before comparing (0.1 mi, 0.001 avg risk, whole minutes) so f
 
 **Efficient weather calls.** Checkpoints are snapped to a 0.05° (~5 km) grid, which is roughly the model's resolution. Duplicates are removed across all three routes, and the rest are batched 100 locations per request, fetched in parallel and cached for 15 minutes. A 900-mile, 3-route plan typically needs one or two weather requests.
 
-**Corridor heatmap.** `services/corridor.py` builds a regular lat/lon grid of cells within 30 miles of any route. Cell size grows with trip length so there are never more than about 450 cells. The `/api/heatmap` call returns all 49 hourly frames (wind, rain, snow, and risk with your load applied) in one gzip-compressed response, so **moving the slider never hits the network**.
+**Corridor heatmap.** `services/corridor.py` builds a regular lat/lon grid of cells within 30 miles of any route. Cell size grows with trip length so there are never more than about 120 cells. The `/api/heatmap` call returns all 49 hourly frames (wind, rain, snow, and risk with your load applied) in one gzip-compressed response, so **moving the slider never hits the network**.
 
 In the browser, `CorridorHeatLayer.js` is a custom Leaflet canvas layer. It bilinearly interpolates the **values** (not the colors), so color edges land where thresholds are crossed. It draws the result in Web-Mercator-correct strips and lets Leaflet pan and zoom-animate the canvas like a tile layer. Pixels are only recomputed when the hour or layer changes, about 5 ms per slider step.
 
@@ -113,30 +113,24 @@ frontend/
   src/components/         TripForm, PlaceInput, RouteCard (strip map), CheckpointTable, MapView, TimeBar
   src/lib/                API client, risk colors, formatting, CorridorHeatLayer (canvas heatmap)
 Dockerfile, render.yaml   single-service deploy (Django serves the React build)
+Makefile                local setup, API, frontend, tests (uses uv)
 ```
 
 ## Run locally
 
-Requirements: Python 3.11+ and Node 20+.
+Requirements: [uv](https://docs.astral.sh/uv/) (Python 3.12) and Node 20+.
 
 ```bash
-# Backend (terminal 1)
-cd backend
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements-dev.txt
-python manage.py runserver            # http://127.0.0.1:8000
-
-# Frontend (terminal 2)
-cd frontend
-npm install
-npm run dev                           # http://localhost:5173 (proxies /api to :8000)
+make setup        # uv sync in backend/, npm ci in frontend/
+make backend      # http://127.0.0.1:8000
+make frontend     # http://localhost:5173 (proxies /api to :8000)
+make test
+make demo         # same API, with the offline weather and routing fakes
 ```
 
-**Offline demo mode.** `FAKE_PROVIDERS=1 python manage.py runserver` swaps the three APIs for deterministic fakes, with a storm parked across the Dallas to Chicago corridor. Use it to show every risk level on demand, or when a public API is down. The tests use the same fakes.
+Python dependencies live in `backend/pyproject.toml` and `backend/uv.lock`. `make setup` creates `backend/.venv` from that lockfile.
 
-```bash
-cd backend && pytest                  # 67 tests
-```
+**Offline demo mode.** `make demo` swaps the three APIs for deterministic fakes, with a storm parked across the Dallas to Chicago corridor. Use it to show every risk level on demand, or when a public API is down. The tests use the same fakes.
 
 ## Deploy
 

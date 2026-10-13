@@ -16,7 +16,9 @@ from ..providers import weather
 from ..risk import assess
 
 CORRIDOR_MILES = 30.0
-MAX_CELLS = 450
+# Kept small so the 48-hour fetch fits a 512 MB host. A larger grid
+# (Dallas–Chicago was ~420 cells) made that host drop the connection.
+MAX_CELLS = 120
 STEP_CANDIDATES_DEG = (0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.65, 0.8, 1.0, 1.25, 1.5)
 HEATMAP_HOURS = 48
 MILES_PER_DEG_LAT = 69.0

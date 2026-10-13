@@ -260,7 +260,7 @@ export default function MapView({ plan, selectedId, onSelect, heat, hour, mode, 
           onPickCheckpoint={setPopup}
         />
       )}
-      {plan && heat && <Trucks routes={plan.routes} hour={hour} selectedId={selectedId} />}
+      {plan && <Trucks routes={plan.routes} hour={hour} selectedId={selectedId} />}
       <PopupCloseWatcher onClose={closePopup} />
       {popup && (
         <Popup position={[popup.cp.lat, popup.cp.lon]} offset={[0, -4]}>

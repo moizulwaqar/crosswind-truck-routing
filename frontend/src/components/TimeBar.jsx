@@ -50,7 +50,7 @@ function HoverReadout() {
   );
 }
 
-export default function TimeBar({ heat, loading, error, hour, setHour, mode, setMode, selectedRoute }) {
+export default function TimeBar({ start, heat, loading, error, hour, setHour, mode, setMode, selectedRoute }) {
   const [playing, setPlaying] = useState(false);
   const timer = useRef(null);
 
@@ -62,7 +62,7 @@ export default function TimeBar({ heat, loading, error, hour, setHour, mode, set
     return () => clearInterval(timer.current);
   }, [playing, setHour]);
 
-  const startMs = heat ? new Date(heat.start).getTime() : null;
+  const startMs = new Date(heat?.start || start).getTime();
   const frameTime = startMs ? new Date(startMs + hour * 3600 * 1000).toISOString() : null;
   const arrivedAt = selectedRoute ? selectedRoute.duration_seconds / 3600 : null;
 
@@ -83,7 +83,7 @@ export default function TimeBar({ heat, loading, error, hour, setHour, mode, set
       {loading && <p className="timebar-status">Loading the 48-hour corridor forecast…</p>}
       {error && <p className="timebar-status is-error">{error}</p>}
 
-      {heat && (
+      {Number.isFinite(startMs) && (
         <>
           <div className="timebar-row">
             <button type="button" className="play" onClick={() => setPlaying((p) => !p)}

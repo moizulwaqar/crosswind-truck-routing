@@ -18,4 +18,4 @@ RUN mkdir -p /app/backend/staticfiles
 COPY --from=frontend /app/frontend/dist /app/frontend/dist
 EXPOSE 8000
 # Threads let one worker overlap the slow third-party HTTP calls.
-CMD sh -c "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT} --workers 2 --threads 4 --timeout 90 --no-control-socket"
+CMD sh -c "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT} --workers 1 --threads 4 --timeout 90 --no-control-socket"
