@@ -4,6 +4,7 @@ glibc keeps spare pages, and a 128 MiB host counts them. Trimming after a
 forecast lets the next request start from the real usage instead of the peak.
 """
 import ctypes
+import gc
 
 
 class MallocTrimMiddleware:
@@ -18,5 +19,6 @@ class MallocTrimMiddleware:
         try:
             return self.get_response(request)
         finally:
+            gc.collect()
             if self._trim is not None:
                 self._trim(0)
