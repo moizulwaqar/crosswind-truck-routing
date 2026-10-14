@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 import math
 import re
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
@@ -153,8 +152,7 @@ def forecasts(points: list[LatLon], start: datetime, end: datetime) -> dict[LatL
         return _series(props, start, end)
 
     buckets = list(groups)
-    with ThreadPoolExecutor(max_workers=4) as pool:
-        loaded = list(pool.map(load, buckets))
+    loaded = [load(bucket) for bucket in buckets]
 
     result = {}
     for bucket, series in zip(buckets, loaded):

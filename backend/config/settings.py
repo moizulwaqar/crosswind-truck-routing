@@ -32,6 +32,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "config.memory.MallocTrimMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -90,7 +91,7 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "truck-routing",
-        "OPTIONS": {"MAX_ENTRIES": 20000},
+        "OPTIONS": {"MAX_ENTRIES": 400},
     }
 }
 

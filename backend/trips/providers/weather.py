@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 import math
-from concurrent.futures import ThreadPoolExecutor
 from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -40,7 +39,7 @@ def _over_quota(exc: ProviderError) -> bool:
     return "429" in message or "limit" in message or "too many" in message
 
 GRID_DEG = 0.05  # snap points to ~5 km cells: matches model resolution, dedupes requests
-BATCH_SIZE = 100  # locations per Open-Meteo request (keeps URLs well under limits)
+BATCH_SIZE = 40  # one batch in memory at a time; 128 MiB host cannot hold several at once
 CACHE_SECONDS = 15 * 60
 HOURLY_VARS = "wind_speed_10m,wind_gusts_10m,rain,showers,snowfall"
 
@@ -164,8 +163,8 @@ def _open_meteo(points: list[LatLon], start: datetime, end: datetime) -> dict[La
 
     if missing:
         batches = [missing[i : i + BATCH_SIZE] for i in range(0, len(missing), BATCH_SIZE)]
-        with ThreadPoolExecutor(max_workers=4) as pool:
-            fetched = list(pool.map(lambda b: _fetch_batch(b, start, end), batches))
+        # Sequential on purpose: parallel batches each hold a full parsed forecast.
+        fetched = [_fetch_batch(b, start, end) for b in batches]
         to_cache = {}
         for batch, series_list in zip(batches, fetched):
             for c, series in zip(batch, series_list):
