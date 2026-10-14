@@ -1,0 +1,10 @@
+# SnapDeploy builds the Dockerfile and redeploys this branch on every push.
+# https://crosswind-truck-routing-ec233.containers.snapdeploy.app/
+name: crosswind-truck-routing
+branch: main
+dockerfile: Dockerfile
+port: 8000
+healthCheckPath: /api/health
+env:
+  DJANGO_DEBUG: "0"
+  DJANGO_ALLOWED_HOSTS: ".containers.snapdeploy.app"

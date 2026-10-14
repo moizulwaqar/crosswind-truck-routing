@@ -1,7 +1,7 @@
 """Django settings for the Weather-Aware Truck Routing backend.
 
 Everything environment-specific is read from env vars so the same code runs
-locally, in Docker and on Render without edits.
+locally, in Docker and on SnapDeploy without edits.
 """
 import os
 from pathlib import Path
@@ -20,7 +20,7 @@ def env_list(name: str, default: str = "") -> list[str]:
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-only-insecure-key-change-me")
 DEBUG = env_bool("DJANGO_DEBUG", True)
-ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,.onrender.com")
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,.containers.snapdeploy.app")
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 
 INSTALLED_APPS = [
